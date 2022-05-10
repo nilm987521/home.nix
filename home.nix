@@ -22,6 +22,7 @@
     pkgs.fd
     # colorful man
     pkgs.tldr
+    pkgs.figlet
   ];
 
   #=============
