@@ -23,6 +23,7 @@
     # colorful man
     pkgs.tldr
     pkgs.figlet
+    pkgs.jdk11
   ];
 
   #=============
