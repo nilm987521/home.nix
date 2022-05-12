@@ -2,7 +2,7 @@
 
 {
   home.username = "nilm";
-  home.homeDirectory = "/Users/nilm";
+  home.homeDirectory = "/home/nilm";
   home.stateVersion = "22.05";
   home.packages = [
     pkgs.btop
@@ -10,12 +10,12 @@
     pkgs.bat
     pkgs.fzf
     pkgs.direnv
-    pkgs.python38
     pkgs.gcc
     pkgs.neovim
     pkgs.cmatrix
     pkgs.exa
     pkgs.fishPlugins.fzf-fish
+    pkgs.nix-direnv
     #pkgs.nnn
     # sha256sum, md5sum
     pkgs.coreutils
@@ -23,13 +23,18 @@
     # colorful man
     pkgs.tldr
     pkgs.figlet
-    pkgs.jdk11
+	
+    # optional
+    pkgs.logseq
+    pkgs.vlc
+    pkgs.postman
   ];
 
   #=============
   # home-manager
   #=============
   programs.home-manager.enable = true;
+
 
   #===========
   # Fish
@@ -61,7 +66,7 @@
       end
 
       # nnn
-      set -x NNN_PLUG 'f:finder;o:fzopen;p:mocplay;d:diffs;t:nmount;v:imgview'
+      set -x NNN_PLUG 'f:finder;o:fzopen;P:mocq;d:diffs;t:nmount;v:imgview'
       set -x NNN_BMS  'd:$HOME/Documents;D:$HOME/Downloads;h:$HOME'
       set -x BLK '0B'
       set -x CHR '0B'
@@ -88,8 +93,14 @@
       alias fp="cat /etc/services | fzf"
       alias gcob='git checkout $(git branch | fzf --cycle --border --ansi)'
       alias vim='nvim'
+      alias vi='nvim'
       alias ls='exa'
       alias mans='tldr'
+
+      # direnv
+      direnv hook fish | source
+
+      set -x NIXPKGS_ALLOW_UNFREE 1 
       '';
   };
 
@@ -101,4 +112,5 @@
     userName  = "Daniel Lan";
     userEmail = "nilm987521@gmail.com";
   };
+
 }
