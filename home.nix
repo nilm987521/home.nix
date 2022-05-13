@@ -198,6 +198,7 @@
 
       in [
         #CoVim
+        nvim-lspconfig
         SimpylFold
         context_filetype-vim
         caw-vim
