@@ -198,6 +198,7 @@
 
       in [
         #CoVim
+        colorizer
         nvim-lspconfig
         SimpylFold
         context_filetype-vim
