@@ -6,7 +6,8 @@
   home.stateVersion = "22.05";
   home.packages = with pkgs; [
     # rofi
-    nixfmt
+
+    rnix-lsp
     go
     universal-ctags
     wget
@@ -23,7 +24,7 @@
     # -- 模糊查詢
     fd
     fzf
-    fishPlugins.fzf-fish
+    # fishPlugins.fzf-fish
     # -- 可以針對資料夾變更開發環境
     direnv
     nix-direnv
@@ -44,7 +45,7 @@
     #conda
     # -- python
     python3
-    # -- 1password
+    # -- 1password，Mac最好是裝官方的
     #_1password
     #_1password-gui
   ];
@@ -68,16 +69,6 @@
           repo = "plugin-foreign-env";
           rev = "dddd9213272a0ab848d474d0cbde12ad034e65bc";
           sha256 = "00xqlyl3lffc5l0viin1nyp819wf81fncqyz87jx8ljjdhilmgbs";
-        };
-      }
-
-      {
-        name = "gitnow";
-        src = pkgs.fetchFromGitHub {
-          owner = "joseluisq";
-          repo = "gitnow";
-          rev = "d4dd22e4aaac2ad10391d3d7fc2aba88140b2baa";
-          sha256 = "0nffldzs696ww4k786qx0pc6b0zls1ja7z2b103zh5mihw0s5zjs";
         };
       }
     ];
@@ -134,9 +125,17 @@
       set mouse=a
       set number
       set termguicolors
+      " -- 設定檔案編碼方式
       set encoding=utf8
       setglobal fileencoding=utf-8
       set laststatus=2
+      " -- termianl
+      let g:floaterm_keymap_toggle = '<F12>'
+      let g:floaterm_width = 0.9
+      let g:floaterm_height = 0.9
+      " -- fzf 設定
+      " let g:fzf_preview_window = 'right:50%'
+      " let g:fzf_layout = { 'window': { 'width': 0.9, 'height': 0.6  }  }
       let g:airline#extensions#tabline#enabled=1
       " -- 當nerdtree為唯一視窗時，自動關閉
       autocmd bufenter * if (winnr("$") == 1 && exists("b:NERDTree") && b:NERDTree.isTabTree()) | q | endif
@@ -160,7 +159,8 @@
                 \ 'Unknown'   :'?',
                 \ }
       " -- F5打開側邊資料夾
-      nnoremap <F5> :exec 'NERDTreeToggle' <CR>
+      "nnoremap <F5> :exec 'NERDTreeToggle' <CR>
+      nmap <F5> :NERDTreeToggle <CR>
       " -- 快捷鍵e切換到前一個標籤
       nmap e <Plug>AirlineSelectPrevTab
       " -- 快捷鍵E切換到後一個標籤
@@ -176,6 +176,14 @@
       endif
       nmap <PageUp> <C-u>
       nmap <PageDown> <C-d>
+      " -- Ctrl + s 儲存
+      nmap <C-s> :w<CR>
+
+      nnoremap <C-f> <Nop>
+      vnoremap <C-f> <Nop>
+      inoremap <C-f> <Nop>
+      
+      " -- 安裝外掛
       call plug#begin()
         Plug 'ms-jpq/coq_nvim', {'branch': 'coq'}
         Plug 'ms-jpq/coq.artifacts', {'branch': 'artifacts'}
@@ -187,17 +195,14 @@
 
 
       lua << EOF
+        require'lspconfig'.rnix.setup{}
+        require('neoscroll').setup()
+        local colors = require("tokyonight.colors").setup()
         local kopts = {noremap = true, silent = true}
         vim.api.nvim_set_keymap('n', 'n',[[<Cmd>execute('normal! ' . v:count1 . 'n')<CR><Cmd>lua require('hlslens').start()<CR>]],kopts)
         vim.api.nvim_set_keymap('n', 'N',[[<Cmd>execute('normal! ' . v:count1 . 'N')<CR><Cmd>lua require('hlslens').start()<CR>]],kopts)
-        vim.api.nvim_set_keymap('n', '*', [[*<Cmd>lua require('hlslens').start()<CR>]], kopts)
-        vim.api.nvim_set_keymap('n', '#', [[#<Cmd>lua require('hlslens').start()<CR>]], kopts)
-        vim.api.nvim_set_keymap('n', 'g*', [[g*<Cmd>lua require('hlslens').start()<CR>]], kopts)
-        vim.api.nvim_set_keymap('n', 'g#', [[g#<Cmd>lua require('hlslens').start()<CR>]], kopts)
-        vim.api.nvim_set_keymap('n', '<Leader>l', ':noh<CR>', kopts)
+        -- COQ.VIM 設定: 自動啟動+tabnine啟動
         vim.g.coq_settings = {auto_start = true, clients = {tabnine = {enabled = true}}}
-        require('neoscroll').setup()
-        local colors = require("tokyonight.colors").setup()
 
         require("scrollbar").setup({
             handle = {
@@ -212,10 +217,40 @@
                 Misc = { color = colors.purple },
             }
         })
+        require("scrollbar.handlers").register("my_marks", function(bufnr)
+          return {
+              { line = 0 },
+              { line = 1, text = "x", type = "Warn" },
+              { line = 2, type = "Error" }
+          }
+        end)
+        -- lsp key map
+        local opts = { noremap=true, silent=true }
+        local on_attach = function(client, bufnr)
+          -- Enable completion triggered by <c-x><c-o>
+          vim.api.nvim_buf_set_option(bufnr, 'omnifunc', 'v:lua.vim.lsp.omnifunc')
+
+          -- Mappings.
+          -- See `:help vim.lsp.*` for documentation on any of the below functions
+          vim.api.nvim_buf_set_keymap(bufnr, 'n', 'gD', '<cmd>lua vim.lsp.buf.declaration()<CR>', opts)
+          vim.api.nvim_buf_set_keymap(bufnr, 'n', 'gd', '<cmd>lua vim.lsp.buf.definition()<CR>', opts)
+          vim.api.nvim_buf_set_keymap(bufnr, 'n', 'K', '<cmd>lua vim.lsp.buf.hover()<CR>', opts)
+          vim.api.nvim_buf_set_keymap(bufnr, 'n', 'gi', '<cmd>lua vim.lsp.buf.implementation()<CR>', opts)
+          vim.api.nvim_buf_set_keymap(bufnr, 'n', '<C-k>', '<cmd>lua vim.lsp.buf.signature_help()<CR>', opts)
+          vim.api.nvim_buf_set_keymap(bufnr, 'n', '<space>wa', '<cmd>lua vim.lsp.buf.add_workspace_folder()<CR>', opts)
+          vim.api.nvim_buf_set_keymap(bufnr, 'n', '<space>wr', '<cmd>lua vim.lsp.buf.remove_workspace_folder()<CR>', opts)
+          vim.api.nvim_buf_set_keymap(bufnr, 'n', '<space>wl', '<cmd>lua print(vim.inspect(vim.lsp.buf.list_workspace_folders()))<CR>', opts)
+          vim.api.nvim_buf_set_keymap(bufnr, 'n', '<F2>', '<cmd>lua vim.lsp.buf.type_definition()<CR>', opts)
+          vim.api.nvim_buf_set_keymap(bufnr, 'n', '<space>rn', '<cmd>lua vim.lsp.buf.rename()<CR>', opts)
+          vim.api.nvim_buf_set_keymap(bufnr, 'n', '<space>ca', '<cmd>lua vim.lsp.buf.code_action()<CR>', opts)
+          vim.api.nvim_buf_set_keymap(bufnr, 'n', 'gr', '<cmd>lua vim.lsp.buf.references()<CR>', opts)
+          -- 文件格式化 Document Formatting
+          vim.api.nvim_buf_set_keymap(bufnr, 'n', 'ff', '<cmd>lua vim.lsp.buf.formatting()<CR>', opts)
+        end
       EOF
     '';
     plugins = with pkgs.vimPlugins;
-    # 不用nixpackage裡面的外掛，需要用let 定義
+      # 不用nixpackage裡面的外掛，需要用let 定義
       let
         tokyonight = pkgs.vimUtils.buildVimPlugin {
           name = "tokyonight";
@@ -237,8 +272,12 @@
           };
         };
 
-      in [
+      in
+      [
         #CoVim
+        vim-floaterm
+        vim-fugitive
+        vim-gitgutter
         neoscroll-nvim
         colorizer
         nvim-lspconfig
@@ -246,17 +285,12 @@
         context_filetype-vim
         caw-vim
         emmet-vim
-        nerdcommenter
+        # nerdcommenter
         undotree
         nerdtree
-        nerdtree-git-plugin
+        # nerdtree-git-plugin
         vim-snippets
         vim-devicons
-        ncm2
-        ncm2-bufword
-        ncm2-path
-        ncm2-tmux
-        ncm2-ultisnips
         # 可以用nnn開啟檔案
         nnn-vim
         #
