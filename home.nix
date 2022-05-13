@@ -5,45 +5,46 @@
   home.homeDirectory = "/home/nilm";
   home.stateVersion = "22.05";
   home.packages = with pkgs; [
-    tabnine
     # rofi
     nixfmt
     go
     universal-ctags
     wget
-    # node
+    # -- node
     nodejs
     yarn
     yarn2nix
-    # htop的炫砲版
+    # -- htop的炫砲版
     btop
+    # -- shell視窗管理
     tmux
-    # 比cat 畫面更好
+    # -- 比cat 畫面更好
     bat
-    # 模糊查詢
+    # -- 模糊查詢
     fd
     fzf
     fishPlugins.fzf-fish
-    # 可以針對資料夾變更開發環境
+    # -- 可以針對資料夾變更開發環境
     direnv
     nix-direnv
-    # C語言編譯器
-    gcc
-    # 駭客任務
+    # -- C語言編譯器
+    clang
+    cmake
+    # -- 駭客任務
     cmatrix
-    # ls的炫砲版
+    # -- ls的炫砲版
     exa
-    # man的炫砲版
+    # -- man的炫砲版
     tldr
-    # 顯示Hello World!!
+    # -- 顯示Hello World!!
     figlet
-    # console的檔案管理，mac沒有辦法裝有icon的
+    # -- console的檔案管理，mac沒有辦法裝有icon的
     nnn
-    # arm 不能用Conda 
+    # -- arm 不能用Conda 
     #conda
-    # python
+    # -- python
     python3
-    # 1password
+    # -- 1password
     #_1password
     #_1password-gui
   ];
@@ -128,7 +129,7 @@
       " -- 當nerdtree為唯一視窗時，自動關閉
       autocmd bufenter * if (winnr("$") == 1 && exists("b:NERDTree") && b:NERDTree.isTabTree()) | q | endif
       " -- 是否顯示隱藏檔案
-      let g:NERDTreeHidden=1
+      let g:NERDTreeHidden=0
       " -- 讓nerdtree更漂亮
       let NERDTreeMinimalUI = 1
       let NERDTreeDirArrows = 1
@@ -161,15 +162,15 @@
           vmap <C-_> gcc
       endif
 
+      call plug#begin()
+        Plug 'ms-jpq/coq_nvim', {'branch': 'coq'}
+        Plug 'ms-jpq/coq.artifacts', {'branch': 'artifacts'}
+        Plug 'ms-jpq/coq.thirdparty', {'branch': '3p'}
+      call plug#end()
+
+
       lua << EOF
-        require("nvim-lsp-installer").setup {}
-        require'lspconfig'.pyright.setup{
-          automatic_installation = true
-        }
-        require'lspconfig'.eslint.setup{
-          automatic_installation = true
-        }
-        vim.lsp.set_log_level("debug")
+        vim.g.coq_settings = {auto_start = true, clients = {tabnine = {enabled = true}}}
       EOF
     '';
     plugins = with pkgs.vimPlugins;
@@ -185,16 +186,6 @@
           };
         };
 
-        nvim-lsp-installer = pkgs.vimUtils.buildVimPlugin {
-          name = "nvim-lsp-installer";
-          src = pkgs.fetchFromGitHub {
-            owner = "williamboman";
-            repo = "nvim-lsp-installer";
-            rev = "b8a02bf2ec173c48d207644089e3b6879e8c4e9e";
-            sha256 = "0vck39jbrm3fwrq1iky0afkd61h7lmfxbyajcly1ixqa4vpbcdb5";
-          };
-        };
-        
         CoVim = pkgs.vimUtils.buildVimPlugin {
           name = "CoVim";
           src = pkgs.fetchFromGitHub {
@@ -205,7 +196,6 @@
           };
         };
 
-
       in [
         #CoVim
         SimpylFold
@@ -214,8 +204,6 @@
         emmet-vim
         nerdcommenter
         undotree
-        nvim-lsp-installer
-        tabnine-vim
         nerdtree
         nerdtree-git-plugin
         vim-snippets
@@ -236,8 +224,6 @@
         # 佈景主題
         tokyonight
         # lsp
-        vim-lsp
-        nvim-lspconfig
       ]; # Only loaded if programs.neovim.extraConfig is set
     viAlias = true;
     vimAlias = true;
