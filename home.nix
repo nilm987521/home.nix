@@ -60,15 +60,27 @@
   programs.fish = {
     enable = true;
 
-    plugins = [{
-      name = "foreign-env";
-      src = pkgs.fetchFromGitHub {
-        owner = "oh-my-fish";
-        repo = "plugin-foreign-env";
-        rev = "dddd9213272a0ab848d474d0cbde12ad034e65bc";
-        sha256 = "00xqlyl3lffc5l0viin1nyp819wf81fncqyz87jx8ljjdhilmgbs";
-      };
-    }];
+    plugins = [
+      {
+        name = "foreign-env";
+        src = pkgs.fetchFromGitHub {
+          owner = "oh-my-fish";
+          repo = "plugin-foreign-env";
+          rev = "dddd9213272a0ab848d474d0cbde12ad034e65bc";
+          sha256 = "00xqlyl3lffc5l0viin1nyp819wf81fncqyz87jx8ljjdhilmgbs";
+        };
+      }
+
+      {
+        name = "gitnow";
+        src = pkgs.fetchFromGitHub {
+          owner = "joseluisq";
+          repo = "gitnow";
+          rev = "d4dd22e4aaac2ad10391d3d7fc2aba88140b2baa";
+          sha256 = "0nffldzs696ww4k786qx0pc6b0zls1ja7z2b103zh5mihw0s5zjs";
+        };
+      }
+    ];
 
     shellInit = ''
       figlet Hello World!!
@@ -98,7 +110,7 @@
       alias vi='nvim'
       alias ls='exa'
       alias mans='tldr'
-
+      alias nix-sha25='nix-prefetch-url --unpack'
       # direnv
       direnv hook fish | source
 
@@ -128,6 +140,7 @@
       let g:airline#extensions#tabline#enabled=1
       " -- 當nerdtree為唯一視窗時，自動關閉
       autocmd bufenter * if (winnr("$") == 1 && exists("b:NERDTree") && b:NERDTree.isTabTree()) | q | endif
+
       " -- 是否顯示隱藏檔案
       let g:NERDTreeHidden=0
       " -- 讓nerdtree更漂亮
@@ -161,16 +174,44 @@
           nmap <C-_> gcc
           vmap <C-_> gcc
       endif
-
+      nmap <PageUp> <C-u>
+      nmap <PageDown> <C-d>
       call plug#begin()
         Plug 'ms-jpq/coq_nvim', {'branch': 'coq'}
         Plug 'ms-jpq/coq.artifacts', {'branch': 'artifacts'}
         Plug 'ms-jpq/coq.thirdparty', {'branch': '3p'}
+        Plug 'petertriho/nvim-scrollbar'
+        Plug 'kevinhwang91/nvim-hlslens'
       call plug#end()
 
 
+
       lua << EOF
+        local kopts = {noremap = true, silent = true}
+        vim.api.nvim_set_keymap('n', 'n',[[<Cmd>execute('normal! ' . v:count1 . 'n')<CR><Cmd>lua require('hlslens').start()<CR>]],kopts)
+        vim.api.nvim_set_keymap('n', 'N',[[<Cmd>execute('normal! ' . v:count1 . 'N')<CR><Cmd>lua require('hlslens').start()<CR>]],kopts)
+        vim.api.nvim_set_keymap('n', '*', [[*<Cmd>lua require('hlslens').start()<CR>]], kopts)
+        vim.api.nvim_set_keymap('n', '#', [[#<Cmd>lua require('hlslens').start()<CR>]], kopts)
+        vim.api.nvim_set_keymap('n', 'g*', [[g*<Cmd>lua require('hlslens').start()<CR>]], kopts)
+        vim.api.nvim_set_keymap('n', 'g#', [[g#<Cmd>lua require('hlslens').start()<CR>]], kopts)
+        vim.api.nvim_set_keymap('n', '<Leader>l', ':noh<CR>', kopts)
         vim.g.coq_settings = {auto_start = true, clients = {tabnine = {enabled = true}}}
+        require('neoscroll').setup()
+        local colors = require("tokyonight.colors").setup()
+
+        require("scrollbar").setup({
+            handle = {
+                color = colors.bg_highlight,
+            },
+            marks = {
+                Search = { color = colors.orange },
+                Error = { color = colors.error },
+                Warn = { color = colors.warning },
+                Info = { color = colors.info },
+                Hint = { color = colors.hint },
+                Misc = { color = colors.purple },
+            }
+        })
       EOF
     '';
     plugins = with pkgs.vimPlugins;
@@ -198,6 +239,7 @@
 
       in [
         #CoVim
+        neoscroll-nvim
         colorizer
         nvim-lspconfig
         SimpylFold
