@@ -124,8 +124,6 @@
       set encoding=utf8
       setglobal fileencoding=utf-8
       set laststatus=2
-      " -- 自動開啟nerdtree
-      autocmd vimenter * NERDTree 
       let g:airline#extensions#tabline#enabled=1
       " -- 當nerdtree為唯一視窗時，自動關閉
       autocmd bufenter * if (winnr("$") == 1 && exists("b:NERDTree") && b:NERDTree.isTabTree()) | q | endif
