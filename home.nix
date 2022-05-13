@@ -6,7 +6,7 @@
   home.stateVersion = "22.05";
   home.packages = with pkgs; [
     tabnine
-    #rofi
+    # rofi
     nixfmt
     go
     universal-ctags
@@ -124,9 +124,44 @@
       set encoding=utf8
       setglobal fileencoding=utf-8
       set laststatus=2
+      " -- 自動開啟nerdtree
+      autocmd vimenter * NERDTree 
       let g:airline#extensions#tabline#enabled=1
+      " -- 當nerdtree為唯一視窗時，自動關閉
+      autocmd bufenter * if (winnr("$") == 1 && exists("b:NERDTree") && b:NERDTree.isTabTree()) | q | endif
+      " -- 是否顯示隱藏檔案
+      let g:NERDTreeHidden=1
+      " -- 讓nerdtree更漂亮
+      let NERDTreeMinimalUI = 1
+      let NERDTreeDirArrows = 1
+      " -- nerdtree的git檔案狀設定
+      let g:NERDTreeGitStatusIndicatorMapCustom = {
+                \ 'Modified'  :'✹',
+                \ 'Staged'    :'✚',
+                \ 'Untracked' :'✭',
+                \ 'Renamed'   :'➜',
+                \ 'Unmerged'  :'═',
+                \ 'Deleted'   :'✖',
+                \ 'Dirty'     :'✗',
+                \ 'Ignored'   :'☒',
+                \ 'Clean'     :'✔︎',
+                \ 'Unknown'   :'?',
+                \ }
+      " -- F5打開側邊資料夾
       nnoremap <F5> :exec 'NERDTreeToggle' <CR>
-      nnoremap <F6> :exec 'Neoformat' <CR>
+      " -- 快捷鍵e切換到前一個標籤
+      nmap e <Plug>AirlineSelectPrevTab
+      " -- 快捷鍵E切換到後一個標籤
+      nmap E <Plug>AirlineSelectNextTab
+      "  -- ctrl+/設定為開啟、關閉註釋
+      " 注意！Unix作業系統中的ctrl+/會被認為是ctrl+_，所以下面有這樣一條if判斷
+      if has('win32')
+          nmap <C-/> gcc
+          vmap <C-/> gcc
+      else
+          nmap <C-_> gcc
+          vmap <C-_> gcc
+      endif
 
       lua << EOF
         require("nvim-lsp-installer").setup {}
@@ -152,16 +187,6 @@
           };
         };
 
-        neoformat = pkgs.vimUtils.buildVimPlugin {
-          name = "neoformat";
-          src = pkgs.fetchFromGitHub {
-            owner = "sbdchd";
-            repo = "neoformat";
-            rev = "409ebbba9f4b568ea87ab4f2de90a645cf5d000a";
-            sha256 = "13vfy252wv88rbw61ap1vg1x5br28d7rwbf19r28ajvg2xkvw816";
-          };
-        };
-
         nvim-lsp-installer = pkgs.vimUtils.buildVimPlugin {
           name = "nvim-lsp-installer";
           src = pkgs.fetchFromGitHub {
@@ -184,10 +209,15 @@
 
 
       in [
-        CoVim
+        #CoVim
+        SimpylFold
+        context_filetype-vim
+        caw-vim
+        emmet-vim
+        nerdcommenter
+        undotree
         nvim-lsp-installer
         tabnine-vim
-        neoformat
         nerdtree
         nerdtree-git-plugin
         vim-snippets
@@ -197,9 +227,6 @@
         ncm2-path
         ncm2-tmux
         ncm2-ultisnips
-        vim-autoformat
-        # 
-        coq-vim
         # 可以用nnn開啟檔案
         nnn-vim
         #
