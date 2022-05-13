@@ -4,39 +4,48 @@
   home.username = "nilm";
   home.homeDirectory = "/home/nilm";
   home.stateVersion = "22.05";
-  home.packages = [
-    pkgs.tabnine
-    pkgs.nixfmt
-    pkgs.go
-    pkgs.universal-ctags
-    # nodejs
-    pkgs.nodejs
-    pkgs.yarn
-    pkgs.yarn2nix
+  home.packages = with pkgs; [
+    tabnine
+    #rofi
+    nixfmt
+    go
+    universal-ctags
+    wget
+    # node
+    nodejs
+    yarn
+    yarn2nix
     # htop的炫砲版
-    pkgs.btop
-    pkgs.tmux
+    btop
+    tmux
     # 比cat 畫面更好
-    pkgs.bat
+    bat
     # 模糊查詢
-    pkgs.fd
-    pkgs.fzf
-    pkgs.fishPlugins.fzf-fish
+    fd
+    fzf
+    fishPlugins.fzf-fish
     # 可以針對資料夾變更開發環境
-    pkgs.direnv
-    pkgs.nix-direnv
+    direnv
+    nix-direnv
     # C語言編譯器
-    pkgs.gcc
+    gcc
     # 駭客任務
-    pkgs.cmatrix
+    cmatrix
     # ls的炫砲版
-    pkgs.exa
+    exa
     # man的炫砲版
-    pkgs.tldr
+    tldr
     # 顯示Hello World!!
-    pkgs.figlet
+    figlet
     # console的檔案管理，mac沒有辦法裝有icon的
-    pkgs.nnn
+    nnn
+    # arm 不能用Conda 
+    #conda
+    # python
+    python3
+    # 1password
+    #_1password
+    #_1password-gui
   ];
 
   #=============
@@ -116,12 +125,17 @@
       setglobal fileencoding=utf-8
       set laststatus=2
       let g:airline#extensions#tabline#enabled=1
-
       nnoremap <F5> :exec 'NERDTreeToggle' <CR>
       nnoremap <F6> :exec 'Neoformat' <CR>
 
       lua << EOF
-        require'lspconfig'.pyright.setup{}
+        require("nvim-lsp-installer").setup {}
+        require'lspconfig'.pyright.setup{
+          automatic_installation = true
+        }
+        require'lspconfig'.eslint.setup{
+          automatic_installation = true
+        }
         vim.lsp.set_log_level("debug")
       EOF
     '';
@@ -148,7 +162,30 @@
           };
         };
 
+        nvim-lsp-installer = pkgs.vimUtils.buildVimPlugin {
+          name = "nvim-lsp-installer";
+          src = pkgs.fetchFromGitHub {
+            owner = "williamboman";
+            repo = "nvim-lsp-installer";
+            rev = "b8a02bf2ec173c48d207644089e3b6879e8c4e9e";
+            sha256 = "0vck39jbrm3fwrq1iky0afkd61h7lmfxbyajcly1ixqa4vpbcdb5";
+          };
+        };
+        
+        CoVim = pkgs.vimUtils.buildVimPlugin {
+          name = "CoVim";
+          src = pkgs.fetchFromGitHub {
+            owner = "FredKSchott";
+            repo = "CoVim";
+            rev = "89afb870960f584dc07414bd08f12005dacbac23";
+            sha256 = "1q76xlbh45q1s9bqwac08v2ahz72fanz5mc9gv45h92asjgl8yji";
+          };
+        };
+
+
       in [
+        CoVim
+        nvim-lsp-installer
         tabnine-vim
         neoformat
         nerdtree
@@ -190,4 +227,5 @@
     userName = "Daniel Lan";
     userEmail = "nilm987521@gmail.com";
   };
+
 }
