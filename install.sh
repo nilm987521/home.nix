@@ -9,6 +9,7 @@ nix-shell '<home-manager>' -A install
 mkdir -p ~/.config/nixpkgs
 cp ./home.nix ~/.config/nixpkgs/home.nix
 cp ./.NIX_PATH.sh ~/.NIX_PATH.sh
+cp ./.gitconfig ~/.gitconfig
 # home-manager switch
 home-manager switch
 # install oh-my-fish
@@ -21,3 +22,9 @@ curl -Ls https://raw.githubusercontent.com/jarun/nnn/master/plugins/getplugs | s
 curl -sL https://raw.githubusercontent.com/jorgebucaran/fisher/main/functions/fisher.fish | source && fisher install jorgebucaran/fisher
 # install fzf key binds for fish
 fisher install PatrickF1/fzf.fish
+
+
+# install jdtls-launcher
+sh ./jdtls-install.sh
+fish_add_path  ~/.local/bin
+
