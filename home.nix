@@ -1,16 +1,18 @@
-{ config, pkgs, ... }:
+{ Config, pkgs, ... }:
 
 {
   home.username = "nilm";
   home.homeDirectory = "/home/nilm";
   home.stateVersion = "22.05";
   home.packages = with pkgs; [
-    # rofi
-
-    rnix-lsp
+    delta
+    bc
+    python3
     go
     universal-ctags
     wget
+    # -- lsp 套件
+    rnix-lsp
     # -- node
     nodejs
     yarn
@@ -24,8 +26,11 @@
     # -- 模糊查詢
     fd
     fzf
-    # fishPlugins.fzf-fish
+    fishPlugins.fzf-fish
     # -- 可以針對資料夾變更開發環境
+    # -- 可以針對資料夾變更開發環境
+    direnv
+    nix-direnv
     direnv
     nix-direnv
     # -- C語言編譯器
@@ -44,7 +49,6 @@
     # -- arm 不能用Conda 
     #conda
     # -- python
-    python3
     # -- 1password，Mac最好是裝官方的
     #_1password
     #_1password-gui
@@ -99,14 +103,21 @@
       alias gcob='git checkout $(git branch | fzf --cycle --border --ansi)'
       alias vim='nvim'
       alias vi='nvim'
-      alias ls='exa'
+      alias ls='exa --icons --color=always --group-directories-first'
+      alias ll='exa -alF --icons --color=always --group-directories-first'
+      alias la='exa -a --icons --color=always --group-directories-first'
+      alias l='exa -F --icons --color=always --group-directories-first'
+      alias l.='exa -a | egrep "^\."'
       alias mans='tldr'
-      alias nix-sha25='nix-prefetch-url --unpack'
-      # direnv
+      alias nix-sha256='nix-prefetch-url --unpack'
+
+      # 啟動direnv
       direnv hook fish | source
 
       # 安裝非free的套件所需要的
       set -x NIXPKGS_ALLOW_UNFREE 1 
+
+      # set JDTLS_HOME '~/Documents/SideProject/Java/jdtls/'
     '';
   };
 
@@ -117,72 +128,46 @@
     enable = true;
     #vimrc的設定
     extraConfig = ''
+      let mapleader = "~" 
+      filetype on
+      filetype plugin on
+      filetype indent on
+      syntax on
+      " -- 設定tab鍵寬度
       set tabstop=2
       set shiftwidth=2
       set expandtab
+
+      " -- 設定主題
       colorscheme tokyonight
+
       let g:context_nvim_no_redraw = 1
+
+      " -- 可以用滑鼠
       set mouse=a
+
+      " -- 顯示行號
       set number
+      set relativenumber
+
       set termguicolors
+
       " -- 設定檔案編碼方式
       set encoding=utf8
       setglobal fileencoding=utf-8
+
+      " -- 開啟狀態欄
       set laststatus=2
-      " -- termianl
+
+      " -- float termianl設定
       let g:floaterm_keymap_toggle = '<F12>'
       let g:floaterm_width = 0.9
       let g:floaterm_height = 0.9
+
       " -- fzf 設定
-      " let g:fzf_preview_window = 'right:50%'
-      " let g:fzf_layout = { 'window': { 'width': 0.9, 'height': 0.6  }  }
-      let g:airline#extensions#tabline#enabled=1
-      " -- 當nerdtree為唯一視窗時，自動關閉
-      autocmd bufenter * if (winnr("$") == 1 && exists("b:NERDTree") && b:NERDTree.isTabTree()) | q | endif
+      let g:fzf_preview_window = 'right:50%'
+      let g:fzf_layout = { 'window': { 'width': 0.9, 'height': 0.6  }  }
 
-      " -- 是否顯示隱藏檔案
-      let g:NERDTreeHidden=0
-      " -- 讓nerdtree更漂亮
-      let NERDTreeMinimalUI = 1
-      let NERDTreeDirArrows = 1
-      " -- nerdtree的git檔案狀設定
-      let g:NERDTreeGitStatusIndicatorMapCustom = {
-                \ 'Modified'  :'✹',
-                \ 'Staged'    :'✚',
-                \ 'Untracked' :'✭',
-                \ 'Renamed'   :'➜',
-                \ 'Unmerged'  :'═',
-                \ 'Deleted'   :'✖',
-                \ 'Dirty'     :'✗',
-                \ 'Ignored'   :'☒',
-                \ 'Clean'     :'✔︎',
-                \ 'Unknown'   :'?',
-                \ }
-      " -- F5打開側邊資料夾
-      "nnoremap <F5> :exec 'NERDTreeToggle' <CR>
-      nmap <F5> :NERDTreeToggle <CR>
-      " -- 快捷鍵e切換到前一個標籤
-      nmap e <Plug>AirlineSelectPrevTab
-      " -- 快捷鍵E切換到後一個標籤
-      nmap E <Plug>AirlineSelectNextTab
-      "  -- ctrl+/設定為開啟、關閉註釋
-      " 注意！Unix作業系統中的ctrl+/會被認為是ctrl+_，所以下面有這樣一條if判斷
-      if has('win32')
-          nmap <C-/> gcc
-          vmap <C-/> gcc
-      else
-          nmap <C-_> gcc
-          vmap <C-_> gcc
-      endif
-      nmap <PageUp> <C-u>
-      nmap <PageDown> <C-d>
-      " -- Ctrl + s 儲存
-      nmap <C-s> :w<CR>
-
-      nnoremap <C-f> <Nop>
-      vnoremap <C-f> <Nop>
-      inoremap <C-f> <Nop>
-      
       " -- 安裝外掛
       call plug#begin()
         Plug 'ms-jpq/coq_nvim', {'branch': 'coq'}
@@ -190,20 +175,38 @@
         Plug 'ms-jpq/coq.thirdparty', {'branch': '3p'}
         Plug 'petertriho/nvim-scrollbar'
         Plug 'kevinhwang91/nvim-hlslens'
+        Plug 'ms-jpq/chadtree', {'branch': 'chad', 'do': 'python3 -m chadtree deps'}
+        Plug 'akinsho/bufferline.nvim', { 'tag': 'v2.*' }
+        Plug 'ojroques/nvim-hardline'
       call plug#end()
 
-
-
       lua << EOF
-        require'lspconfig'.rnix.setup{}
-        require('neoscroll').setup()
-        local colors = require("tokyonight.colors").setup()
-        local kopts = {noremap = true, silent = true}
-        vim.api.nvim_set_keymap('n', 'n',[[<Cmd>execute('normal! ' . v:count1 . 'n')<CR><Cmd>lua require('hlslens').start()<CR>]],kopts)
-        vim.api.nvim_set_keymap('n', 'N',[[<Cmd>execute('normal! ' . v:count1 . 'N')<CR><Cmd>lua require('hlslens').start()<CR>]],kopts)
         -- COQ.VIM 設定: 自動啟動+tabnine啟動
         vim.g.coq_settings = {auto_start = true, clients = {tabnine = {enabled = true}}}
 
+        -- 啟用LSP
+        local coq = require "coq"
+        require'lspconfig'.rnix.setup{coq.lsp_ensure_capabilities{}}
+        require'lspconfig'.eslint.setup{coq.lsp_ensure_capabilities{}}
+        require'lspconfig'.pyright.setup{coq.lsp_ensure_capabilities{}}
+        require'lspconfig'.vimls.setup{coq.lsp_ensure_capabilities{}}
+        require'lspconfig'.vuels.setup{coq.lsp_ensure_capabilities{}}
+        require'lspconfig'.html.setup{coq.lsp_ensure_capabilities{}}
+        require'lspconfig'.cssmodules_ls.setup{coq.lsp_ensure_capabilities{}}
+        require'lspconfig'.jdtls.setup{
+          cmd = { 'jdtls' },
+          root_dir = function(fname)
+            return require'lspconfig'.util.root_pattern('pom.xml', 'gradle.build', '.git')(fname) or vim.fn.getcwd()
+          end,
+          init_options = {
+            jvm_args = {},
+            workspace = "/Users/nilm/Documents/SideProject/Java/"
+          }
+        }
+
+        -- 設定ScrollerBar
+        require('neoscroll').setup()
+        local colors = require("tokyonight.colors").setup()
         require("scrollbar").setup({
             handle = {
                 color = colors.bg_highlight,
@@ -224,31 +227,94 @@
               { line = 2, type = "Error" }
           }
         end)
-        -- lsp key map
-        local opts = { noremap=true, silent=true }
-        local on_attach = function(client, bufnr)
-          -- Enable completion triggered by <c-x><c-o>
-          vim.api.nvim_buf_set_option(bufnr, 'omnifunc', 'v:lua.vim.lsp.omnifunc')
+        local kopts = {noremap = true, silent = true}
+        vim.api.nvim_set_keymap('n', 'n',[[<Cmd>execute('normal! ' . v:count1 . 'n')<CR><Cmd>lua require('hlslens').start()<CR>]],kopts)
+        vim.api.nvim_set_keymap('n', 'N',[[<Cmd>execute('normal! ' . v:count1 . 'N')<CR><Cmd>lua require('hlslens').start()<CR>]],kopts)
+        local capabilities = vim.lsp.protocol.make_client_capabilities()
+        capabilities.textDocument.completion.completionItem.snippetSupport = true
 
-          -- Mappings.
-          -- See `:help vim.lsp.*` for documentation on any of the below functions
-          vim.api.nvim_buf_set_keymap(bufnr, 'n', 'gD', '<cmd>lua vim.lsp.buf.declaration()<CR>', opts)
-          vim.api.nvim_buf_set_keymap(bufnr, 'n', 'gd', '<cmd>lua vim.lsp.buf.definition()<CR>', opts)
-          vim.api.nvim_buf_set_keymap(bufnr, 'n', 'K', '<cmd>lua vim.lsp.buf.hover()<CR>', opts)
-          vim.api.nvim_buf_set_keymap(bufnr, 'n', 'gi', '<cmd>lua vim.lsp.buf.implementation()<CR>', opts)
-          vim.api.nvim_buf_set_keymap(bufnr, 'n', '<C-k>', '<cmd>lua vim.lsp.buf.signature_help()<CR>', opts)
-          vim.api.nvim_buf_set_keymap(bufnr, 'n', '<space>wa', '<cmd>lua vim.lsp.buf.add_workspace_folder()<CR>', opts)
-          vim.api.nvim_buf_set_keymap(bufnr, 'n', '<space>wr', '<cmd>lua vim.lsp.buf.remove_workspace_folder()<CR>', opts)
-          vim.api.nvim_buf_set_keymap(bufnr, 'n', '<space>wl', '<cmd>lua print(vim.inspect(vim.lsp.buf.list_workspace_folders()))<CR>', opts)
-          vim.api.nvim_buf_set_keymap(bufnr, 'n', '<F2>', '<cmd>lua vim.lsp.buf.type_definition()<CR>', opts)
-          vim.api.nvim_buf_set_keymap(bufnr, 'n', '<space>rn', '<cmd>lua vim.lsp.buf.rename()<CR>', opts)
-          vim.api.nvim_buf_set_keymap(bufnr, 'n', '<space>ca', '<cmd>lua vim.lsp.buf.code_action()<CR>', opts)
-          vim.api.nvim_buf_set_keymap(bufnr, 'n', 'gr', '<cmd>lua vim.lsp.buf.references()<CR>', opts)
-          -- 文件格式化 Document Formatting
-          vim.api.nvim_buf_set_keymap(bufnr, 'n', 'ff', '<cmd>lua vim.lsp.buf.formatting()<CR>', opts)
-        end
+        require'lspconfig'.html.setup {
+          capabilities = capabilities,
+        }
+  
+        local capabilities = vim.lsp.protocol.make_client_capabilities()
+        capabilities.textDocument.completion.completionItem.snippetSupport = true
+
+        require'lspconfig'.cssls.setup {
+          capabilities = capabilities,
+        }
+        require("coq_3p") {
+          { src = "nvimlua", short_name = "nLUA" },
+          { src = "vimtex", short_name = "vTEX" },
+          { src = "copilot", short_name = "COP", accept_key = "<c-f>" },
+          { src = "bc", short_name = "MATH", precision = 6 },
+          { src = "figlet", short_name = "BIG", trigger = "!big"},
+          { src = "dap" }
+        }
+
+        vim.opt.termguicolors = true
+        require("bufferline").setup{}
+
+        require('hardline').setup {
+          bufferline = false,  -- enable bufferline
+          bufferline_settings = {
+            exclude_terminal = false,  -- don't show terminal buffers in bufferline
+            show_index = false,        -- show buffer indexes (not the actual buffer numbers) in bufferline
+          },
+          theme = 'default',   -- change theme
+          sections = {         -- define sections
+            {class = 'mode', item = require('hardline.parts.mode').get_item},
+            {class = 'high', item = require('hardline.parts.git').get_item, hide = 100},
+            {class = 'med', item = require('hardline.parts.filename').get_item},
+            '%<',
+            {class = 'med', item = '%='},
+            {class = 'low', item = require('hardline.parts.wordcount').get_item, hide = 100},
+            {class = 'error', item = require('hardline.parts.lsp').get_error},
+            {class = 'warning', item = require('hardline.parts.lsp').get_warning},
+            {class = 'warning', item = require('hardline.parts.whitespace').get_item},
+            {class = 'high', item = require('hardline.parts.filetype').get_item, hide = 60},
+            {class = 'mode', item = require('hardline.parts.line').get_item},
+          },
+        }
       EOF
+        
+      " -- 最下面的快捷鍵設定，會覆蓋掉上面的
+      nmap fp <Cmd>Files ./<CR>
+      nmap fh <Cmd>Files ~<CR>
+      nmap <buffer>ca <Cmd> lua vim.lsp.buf.code_action()<CR>
+      nmap <buffer>rn <Cmd> lua vim.lsp.buf.rename()<CR> 
+      nmap <buffer>fm <Cmd> lua vim.lsp.buf.formatting()<CR> 
+      nnoremap <silent><leader>1 <Cmd>BufferLineGoToBuffer 1<CR>
+      nnoremap <silent><leader>2 <Cmd>BufferLineGoToBuffer 2<CR>
+      nnoremap <silent><leader>3 <Cmd>BufferLineGoToBuffer 3<CR>
+      nnoremap <silent><leader>4 <Cmd>BufferLineGoToBuffer 4<CR>
+      nnoremap <silent><leader>5 <Cmd>BufferLineGoToBuffer 5<CR>
+      nnoremap <silent><leader>6 <Cmd>BufferLineGoToBuffer 6<CR>
+      nnoremap <silent><leader>7 <Cmd>BufferLineGoToBuffer 7<CR>
+      nnoremap <silent><leader>8 <Cmd>BufferLineGoToBuffer 8<CR>
+      nnoremap <silent><leader>9 <Cmd>BufferLineGoToBuffer 9<CR>
+      "  -- ctrl+/設定為開啟、關閉註釋
+      " 注意！Unix作業系統中的ctrl+/會被認為是ctrl+_，所以下面有這樣一條if判斷
+      if has('win32')
+          nmap <C-/> gcc
+          vmap <C-/> gcc
+      else
+          nmap <C-_> gcc
+          vmap <C-_> gcc
+      endif
+
+      " -- 設定smooth換頁
+      nmap <PageUp> <C-u>
+      nmap <PageDown> <C-d>
+      
+      " -- Ctrl + s 儲存
+      nmap <silent><C-s> :w<CR>
+      nmap <silent><C-c> :bdelete!<CR>
+
+      " -- F5打開側邊資料夾
+      nmap <silent><F5> :CHADopen <CR>
     '';
+
     plugins = with pkgs.vimPlugins;
       # 不用nixpackage裡面的外掛，需要用let 定義
       let
@@ -262,19 +328,25 @@
           };
         };
 
-        CoVim = pkgs.vimUtils.buildVimPlugin {
-          name = "CoVim";
+        z = pkgs.vimUtils.buildVimPlugin {
+          name = "z";
           src = pkgs.fetchFromGitHub {
-            owner = "FredKSchott";
-            repo = "CoVim";
-            rev = "89afb870960f584dc07414bd08f12005dacbac23";
-            sha256 = "1q76xlbh45q1s9bqwac08v2ahz72fanz5mc9gv45h92asjgl8yji";
+            owner = "jethrokuan";
+            repo = "z";
+            rev = "85f863f20f24faf675827fb00f3a4e15c7838d76";
+            sha256 = "1kaa0k9d535jnvy8vnyxd869jgs0ky6yg55ac1mxcxm8n0rh2mgq";
           };
         };
 
       in
       [
-        #CoVim
+        nvim-web-devicons
+        nvim-jdtls
+        fzf-vim
+        z
+        vim-dadbod
+        vim-dadbod-completion
+        nvim-dap
         vim-floaterm
         vim-fugitive
         vim-gitgutter
@@ -285,18 +357,18 @@
         context_filetype-vim
         caw-vim
         emmet-vim
-        # nerdcommenter
+        nerdcommenter
         undotree
-        nerdtree
+        # nerdtree
         # nerdtree-git-plugin
-        vim-snippets
+        # vim-snippets
         vim-devicons
         # 可以用nnn開啟檔案
         nnn-vim
         #
         editorconfig-vim
         # 狀態欄
-        vim-airline
+        # vim-airline
         # 讓nix檔有顏色
         vim-nix
         # 佈景主題
@@ -315,6 +387,4 @@
     enable = true;
     userName = "Daniel Lan";
     userEmail = "nilm987521@gmail.com";
-  };
-
-}
+  };                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                }
