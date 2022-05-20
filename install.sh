@@ -7,9 +7,9 @@ export NIX_PATH=$HOME/.nix-defexpr/channels:/nix/var/nix/profiles/per-user/root/
 nix-shell '<home-manager>' -A install
 # copy home.nix
 mkdir -p ~/.config/nixpkgs
-cp ./home.nix ~/.config/nixpkgs/home.nix
-cp ./.NIX_PATH.sh ~/.NIX_PATH.sh
-cp ./.gitconfig ~/.gitconfig
+ln ~/Downloads/cli_env/home.nix ~/.config/nixpkgs/
+ln ./.NIX_PATH.sh ~/.NIX_PATH.sh
+ln ./.gitconfig ~/.gitconfig
 # home-manager switch
 home-manager switch
 # install oh-my-fish
