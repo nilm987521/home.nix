@@ -14,7 +14,7 @@ autocmd BufReadPost * if line("'\"") > 1 && line("'\"") <= line("$") | execute "
 let g:user_emmet_leader_key='<C-Z>'
 " -- tab顯示
 let g:vem_tabline_show = 2
-let g:vem_tabline_show_number = "index"
+let g:vem_tabline_show_number = 'index'
 " -- 自動開啟縮排顏色
 let g:indent_guides_enable_on_vim_startup = 1
 " -- ctags
@@ -49,6 +49,26 @@ let g:floaterm_height = 0.9
 " -- fzf 設定
 let g:fzf_preview_window = 'right:50%'
 let g:fzf_layout = { 'window': { 'width': 0.9, 'height': 0.6  }  }
+
+" Create default mappings
+let g:NERDCreateDefaultMappings = 1
+" Add spaces after comment delimiters by default
+let g:NERDSpaceDelims = 1
+" Use compact syntax for prettified multi-line comments
+let g:NERDCompactSexyComs = 1
+" Align line-wise comment delimiters flush left instead of following code indentation
+let g:NERDDefaultAlign = 'left'
+" Set a language to use its alternate delimiters by default
+let g:NERDAltDelims_java = 1
+" Add your own custom formats or override the defaults
+let g:NERDCustomDelimiters = { 'c': { 'left': '/**','right': '*/' } }
+" Allow commenting and inverting empty lines (useful when commenting a region)
+let g:NERDCommentEmptyLines = 1
+" Enable trimming of trailing whitespace when uncommenting
+let g:NERDTrimTrailingWhitespace = 1
+" Enable NERDCommenterToggle to check all selected lines is commented or not
+let g:NERDToggleCheckAllLines = 1
+
 " -- 安裝外掛
 call plug#begin()
   Plug 'ms-jpq/coq_nvim', {'branch': 'coq'}
@@ -81,6 +101,8 @@ call plug#begin()
   Plug 'ryanoasis/vim-devicons'
   Plug 'LnL7/vim-nix'
   Plug 'mfussenegger/nvim-dap'
+  Plug 'psliwka/vim-smoothie'
+  Plug 'preservim/nerdcommenter'
 call plug#end()
 colorscheme tokyonight
 lua << EOF
