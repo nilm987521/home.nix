@@ -193,7 +193,7 @@
         require'lspconfig'.eslint.setup{coq.lsp_ensure_capabilities{}}
         require'lspconfig'.pyright.setup{coq.lsp_ensure_capabilities{}}
         require'lspconfig'.vimls.setup{coq.lsp_ensure_capabilities{}}
-        require'lspconfig'.vuels.setup{coq.lsp_ensure_capabilities{}}
+        require'lspconfig'.volar.setup{coq.lsp_ensure_capabilities{}}
         -- 設定ScrollerBar
         require('neoscroll').setup()
         local colors = require("tokyonight.colors").setup()
@@ -325,11 +325,10 @@
 
       in
       [
-        vim-indent-guides
+        indentLine
         lspsaga-nvim
         auto-pairs
         nvim-web-devicons
-        nvim-jdtls
         fzf-vim
         z
         vim-dadbod
