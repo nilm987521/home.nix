@@ -5,6 +5,7 @@
   home.homeDirectory = "/home/daniel";
   home.stateVersion = "22.05";
   home.packages = with pkgs; [
+    cacert
     ruby_3_0
     nodePackages.neovim
     nodePackages.vscode-langservers-extracted
@@ -171,6 +172,7 @@
         Plug 'williamboman/nvim-lsp-installer'
         Plug 'ap/vim-buftabline'
         Plug 'pacha/vem-tabline'
+        Plug 'github/copilot.vim'
       call plug#end()
       lua << EOF
         -- COQ.VIM 設定: 自動啟動+tabnine啟動
