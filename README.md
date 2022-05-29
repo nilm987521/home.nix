@@ -1,4 +1,4 @@
-## install nix package maager
+## install nix package manager
 ```bash
 sh <(curl -L https://nixos.org/nix/install) --daemon
 ```
