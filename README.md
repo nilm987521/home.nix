@@ -1,4 +1,4 @@
-## 關閉selinus
+## 關閉selinux
 ```bash
 sudo setenforce 0
 ```
