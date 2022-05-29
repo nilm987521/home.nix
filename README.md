@@ -1,3 +1,8 @@
+## 關閉selinus
+```bash
+sudo setenforce 0
+```
+
 ## install nix package manager
 ```bash
 sh <(curl -L https://nixos.org/nix/install) --daemon
