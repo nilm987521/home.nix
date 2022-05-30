@@ -363,3 +363,4 @@
     vimAlias = true;
     vimdiffAlias = true;
   };
+}
