@@ -363,13 +363,3 @@
     vimAlias = true;
     vimdiffAlias = true;
   };
-
-  #====
-  # Git
-  #====
-  programs.git = {
-    enable = true;
-    userName = "Daniel Lan";
-    userEmail = "daniellan@aitc.com.tw";
-  };
-}
