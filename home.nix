@@ -160,6 +160,8 @@
       " -- fzf 設定
       let g:fzf_preview_window = 'right:50%'
       let g:fzf_layout = { 'window': { 'width': 0.9, 'height': 0.6  }  }
+      " -- 自動回到上次編輯位置
+      au BufReadPost * if line("'\"") > 0|if line("'\"") <= line("$")|exe("norm '\"")|else|exe "norm $"|endif|endif
       " -- 安裝外掛
       call plug#begin()
         Plug 'ms-jpq/coq_nvim', {'branch': 'coq'}
