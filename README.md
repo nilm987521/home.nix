@@ -51,10 +51,3 @@ curl -sL https://raw.githubusercontent.com/jorgebucaran/fisher/main/functions/fi
 ```bash
 fisher install PatrickF1/fzf.fish
 ```
-
-## install jdtls-launcher
-```bash
-sh ./jdtls-install.sh
-fish_add_path  ~/.local/bin
-```
-

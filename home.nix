@@ -1,10 +1,11 @@
 { Config, pkgs, ... }:
 
 {
-  home.username = "nilm";
-  home.homeDirectory = "/home/daniel";
+  home.username = "dlan";
+  home.homeDirectory = "/home/dlan";
   home.stateVersion = "22.05";
   home.packages = with pkgs; [
+    nerdfonts
     cacert
     ruby_3_0
     nodePackages.neovim
@@ -12,12 +13,10 @@
     nodejs-16_x
     lvm2
     cargo
-    jdk8
     trash-cli
-    podman
     delta
     bc
-    python3
+    python39
     go
     universal-ctags
     wget
@@ -34,7 +33,6 @@
     fzf
     fishPlugins.fzf-fish
     # -- 可以針對資料夾變更開發環境
-    # -- 可以針對資料夾變更開發環境
     direnv
     nix-direnv
     # -- C語言編譯器
@@ -48,12 +46,6 @@
     tldr
     # -- 顯示Hello World!!
     figlet
-    # -- arm 不能用Conda 
-    conda
-    # -- python
-    # -- 1password，Mac最好是裝官方的
-    #_1password
-    #_1password-gui
   ];
 
   #=============
@@ -80,7 +72,6 @@
     ];
 
     shellInit = ''
-      figlet Hello World!!
       # nix
       if test -e /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh
         fenv source /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh
@@ -112,7 +103,16 @@
       # 啟動direnv
       direnv hook fish | source
       # 安裝非free的套件所需要的
-      set -x NIXPKGS_ALLOW_UNFREE 1 
+      set -x NIXPKGS_ALLOW_UNFREE 1
+      # auto start tmux
+      if status is-interactive 
+      and not set -q TMUX
+        exec tmux
+      end
+      # imput method
+      set -x XMODIFIERS @im=ibus
+      set -x QT_IM_MODULE @im=ibus
+      set -x GTK_IM_MODULE @im=ibus
     '';
   };
 
