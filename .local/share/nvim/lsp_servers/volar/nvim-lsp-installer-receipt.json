@@ -1,0 +1,1 @@
+{"metrics":{"completion_time":1654246736702,"start_time":1654246695797},"primary_source":{"type":"npm","package":"@volar\/vue-language-server"},"schema_version":"1.0a","secondary_sources":[{"type":"npm","package":"typescript"}],"name":"volar"}
