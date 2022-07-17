@@ -30,7 +30,7 @@
     # -- 模糊查詢
     fd
     fzf
-    fishPlugins.fzf-fish
+    #fishPlugins.fzf-fish
     # -- 可以針對資料夾變更開發環境
     direnv
     nix-direnv
@@ -71,15 +71,15 @@
     ];
 
     shellInit = ''
-      set-x EDIRTOR vim
+      set -x EDIRTOR vim
       # vi-mode
       fish_vi_key_bindings
       # fzf
-      set -x FZF_COMPLETION_TRIGGER '~~'
-      set -x FZF_DEFAULT_OPTS '--preview 'bat --style=numbers --color=always --line-range :500 {}'
+      set -x fzf_completion_trigger "~~"
+      set -x fzf_default_opts "--preview 'bat --style=numbers --color=always --line-range :500 {}"
       set -x FZF_FD_OPTS --hidden --exclude=.git
-      set -x FZF_PREVIEW_DIR_CMD 'exa --all --color=always'
-      set -x FZF_PREVIEW_FILE_CMD 'bat'
+      set -x FZF_PREVIEW_DIR_CMD "exa --all --color=always"
+      set -x FZF_PREVIEW_FILE_CMD "bat"
       # nix
       if test -e /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh
         fenv source /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh
@@ -89,13 +89,10 @@
          fenv source ~/.NIX_PATH.sh
       end
       # nnn in fish config
-      set -x NNN_PLUG 'f:finder;o:fzopen;P:mocq;d:diffs;t:nmount;v:imgview'
-      set -x NNN_BMS  'd:$HOME/Documents;D:$HOME/Downloads;h:$HOME'
-      set -x NNN_FCOLORS 'c1e2272e006033f7c6d6abc4'
+      set -x NNN_PLUG "f:finder;o:fzopen;P:mocq;d:diffs;t:nmount;v:imgview"
+      set -x NNN_BMS  "d:$HOME/Documents;D:$HOME/Downloads;h:$HOME"
+      set -x NNN_FCOLORS "c1e2272e006033f7c6d6abc4"
       # alias
-      alias flsof4="lsof -Pn -i4 | awk '{printf \"%10s %6s %5s %4s %-20s\n\", \$1, \$2, \$3, \$8, \$9}' | fzf --border --cycle --ansi --header-lines=1"
-      alias fp="cat /etc/services | fzf"
-      alias gcob='git checkout $(git branch | fzf --cycle --border --ansi)'
       alias vim='nvim'
       alias vi='nvim'
       alias view='nvim -RM'
@@ -103,7 +100,6 @@
       alias ll='exa -alF --icons --color=always --group-directories-first'
       alias la='exa -a --icons --color=always --group-directories-first'
       alias l='exa -F --icons --color=always --group-directories-first'
-      alias l.='exa -a | egrep "^\."'
       alias mans='tldr'
       alias nix-sha256='nix-prefetch-url --unpack'
       alias rm='trash'
@@ -115,6 +111,30 @@
       set -x XMODIFIERS @im=ibus
       set -x QT_IM_MODULE @im=ibus
       set -x GTK_IM_MODULE @im=ibus
+      
+
+      function vim
+        if test "$argv" = "" 
+          /home/dlan/.nix-profile/bin/nvim $(fzf --preview 'bat --style=numbers --color=always --line-range :500 {}')
+        else
+          /home/dlan/.nix-profile/bin/nvim $argv
+        end
+      end
+
+      function gfa
+        set preview "git diff --color=always {}"
+        set files "$(git diff --name-only 2>/dev/null)" 
+        if test "$(git status 2>/dev/null)" = ""
+          echo "非git資料夾"
+          return
+        end
+        if test $files = ""
+          echo "No file changed"
+        else
+          fzf -m --ansi --reverse --preview $preview $files
+        end
+      end
+
     '';
   };
 
@@ -123,7 +143,6 @@
   #=======
   programs.neovim = {
     enable = true;
-    #vimrc的設定
     extraConfig = ''
       set statusline=[%f]%m%r%h\ [%{getcwd()}]\ [%{&ff},%{&fenc}%{(&bomb?\",BOM\":\"\")}]%=[code=%b,\\u%04B]\ [col:%c,pos:%v]\ [line:%l/%L,%p%%]
       set encoding=utf-8
@@ -219,9 +238,6 @@
         }
         require'lspconfig'.rnix.setup{coq.lsp_ensure_capabilities{}}
         require'lspconfig'.eslint.setup{coq.lsp_ensure_capabilities{}}
-        require'lspconfig'.pyright.setup{coq.lsp_ensure_capabilities{}}
-        require'lspconfig'.vimls.setup{coq.lsp_ensure_capabilities{}}
-        require'lspconfig'.volar.setup{coq.lsp_ensure_capabilities{}}
         -- 設定ScrollerBar
         require('neoscroll').setup()
         local colors = require("tokyonight.colors").setup()
@@ -308,7 +324,5 @@
       nnoremap <leader>8 :8tabnext<CR>
       nnoremap <leader>9 :9tabnext<CR>
     '';
-    viAlias = true;
-    vimAlias = true;
   };
 }
